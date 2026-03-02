@@ -600,35 +600,39 @@ class GeoTagImage(
 
             bitmap = processBitmapAspectRatio(bitmap)
 
-            val resizedBitmap = when (cameraAspectRatio) {
-                RATIO_1X1 -> bitmap.scale(1024, 1024)
-                RATIO_16X9 -> bitmap.scale(720, 1280)
-                RATIO_FULL -> {
-                    val maxSide = 1280
-                    val width = bitmap.width
-                    val height = bitmap.height
+            if (useCameraX) {
+                bitmap = when (cameraAspectRatio) {
+                    RATIO_1X1 -> bitmap.scale(1024, 1024)
+                    RATIO_16X9 -> bitmap.scale(720, 1280)
+                    RATIO_FULL -> {
+                        val maxSide = 1280
+                        val width = bitmap.width
+                        val height = bitmap.height
 
-                    if (width >= height) {
-                        val ratio = height.toFloat() / width
-                        bitmap.scale(maxSide, (maxSide * ratio).toInt())
-                    } else {
-                        val ratio = width.toFloat() / height
-                        bitmap.scale((maxSide * ratio).toInt(), maxSide)
+                        if (width >= height) {
+                            val ratio = height.toFloat() / width
+                            bitmap.scale(maxSide, (maxSide * ratio).toInt())
+                        } else {
+                            val ratio = width.toFloat() / height
+                            bitmap.scale((maxSide * ratio).toInt(), maxSide)
+                        }
                     }
-                }
 
-                else -> bitmap.scale(768, 1024)
+                    else -> bitmap.scale(768, 1024)
+                }
+            } else {
+                bitmap =  scaleToMaxSide(bitmap)
             }
 
             if (!geoTagged) {
-                saveImageToGallery(resizedBitmap)
+                saveImageToGallery(bitmap)
                 val outputStream = file.outputStream()
-                resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 80, outputStream)
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 80, outputStream)
                 outputStream.close()
                 return Uri.fromFile(file)
             }
 
-            val geoTaggedBitmap = drawTextOnBitmap(resizedBitmap)
+            val geoTaggedBitmap = drawTextOnBitmap(bitmap)
 
             saveImageToGallery(geoTaggedBitmap)
 
@@ -642,6 +646,25 @@ class GeoTagImage(
         }
         return null
     }
+
+    private fun scaleToMaxSide(bitmap: Bitmap, maxSide: Int = 1024): Bitmap {
+        val width = bitmap.width
+        val height = bitmap.height
+
+        if (width <= maxSide && height <= maxSide) return bitmap
+
+        val ratio = if (width >= height) {
+            maxSide.toFloat() / width
+        } else {
+            maxSide.toFloat() / height
+        }
+
+        val newWidth = (width * ratio).toInt()
+        val newHeight = (height * ratio).toInt()
+
+        return bitmap.scale(newWidth, newHeight)
+    }
+
 
     private fun embedGeoTagInExif(filePath: String, location: Location) {
         try {
