@@ -1,8 +1,5 @@
 <p align="center">
 <img src="https://github.com/dangiashish/GeoTagImage/assets/70362030/88c3e47a-0029-4d90-8276-540558137ccc"/>
-</p>
-
-
 <div align = "center">
 <h1 align="center"> 💫 GeoTagImage (GTI) 📸🌍 </h1>
 <a href="https://www.codefactor.io/repository/github/dangiashish/geotagimage/overview/master"><img src="https://www.codefactor.io/repository/github/dangiashish/geotagimage/badge/master" alt="CodeFactor" /></a>
